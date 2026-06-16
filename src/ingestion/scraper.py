@@ -1,12 +1,6 @@
 """
 Airflow documentation scraper.
 Scrapes https://airflow.apache.org/docs/apache-airflow/stable/
-
-Strategy:
-- Start from the main docs index
-- Follow all internal doc links
-- Extract text preserving h2/h3 structure (needed for section-aware chunking)
-- Cache raw HTML to disk (avoid re-scraping on restart)
 """
 
 import os
@@ -26,7 +20,6 @@ logger = logging.getLogger(__name__)
 BASE_URL = "https://airflow.apache.org/docs/apache-airflow/stable/"
 CACHE_DIR = Path(os.getenv("CORPUS_CACHE_DIR", "./data/corpus"))
 
-# Pages to skip (changelogs, API reference JSON, etc.)
 SKIP_PATTERNS = [
     "_modules/", "_sources/", "genindex", "search.html",
     "changelog", "release-notes", ".json", ".xml", ".js"
@@ -77,7 +70,7 @@ class AirflowDocsScraper:
         links = []
         for a in soup.find_all("a", href=True):
             href = a["href"]
-            full_url = urljoin(base_url, href).split("#")[0]  # strip anchors
+            full_url = urljoin(base_url, href).split("#")[0] 
             if self._is_airflow_doc(full_url) and not self._should_skip(full_url):
                 links.append(full_url)
         return list(set(links))
@@ -95,14 +88,12 @@ class AirflowDocsScraper:
         """
         soup = BeautifulSoup(html, "lxml")
 
-        # Remove navigation, footer, sidebar
         for tag in soup.select("nav, footer, .sidebar, .sphinxsidebar, #searchbox, .headerlink"):
             tag.decompose()
 
         page_title_tag = soup.find("h1")
         page_title = page_title_tag.get_text(strip=True) if page_title_tag else "Untitled"
 
-        # Find all h2 sections
         h2_tags = soup.find_all("h2")
 
         if not h2_tags:
@@ -111,7 +102,7 @@ class AirflowDocsScraper:
             text = body.get_text(separator="\n", strip=True) if body else soup.get_text(separator="\n", strip=True)
             return [{
                 "title": page_title,
-                "content": text[:4000],  # cap single sections
+                "content": text[:4000], 
                 "url": url,
                 "section_anchor": "",
                 "page_title": page_title,
@@ -128,7 +119,6 @@ class AirflowDocsScraper:
                 if sibling.name == "h2":
                     break
                 if hasattr(sibling, "get_text"):
-                    # Handle code blocks specially
                     if sibling.name in ("pre", "code") or sibling.find("pre"):
                         content_parts.append(sibling.get_text(separator="\n"))
                     else:
@@ -137,7 +127,7 @@ class AirflowDocsScraper:
             content = "\n".join(p for p in content_parts if p.strip())
 
             if len(content.strip()) < 50:
-                continue  # skip empty/stub sections
+                continue  
 
             sections.append({
                 "title": f"{page_title} > {section_title}",
@@ -150,7 +140,6 @@ class AirflowDocsScraper:
         return sections
 
     def scrape(self, max_pages: int = 300) -> Generator[dict, None, None]:
-        """Crawl Airflow docs and yield sections."""
         queue = [self.base_url]
         page_count = 0
 

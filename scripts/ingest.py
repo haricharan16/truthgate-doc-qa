@@ -1,17 +1,6 @@
 """
 One-time ingestion script (Gemini version).
 Run: python scripts/ingest.py
-
-Steps:
-1. Scrape Airflow docs → cached to ./data/corpus/
-2. Chunk by sections
-3. Embed with Gemini text-embedding-004 (FREE)
-4. Store in ChromaDB
-5. Build BM25 index → ./data/bm25_index.pkl
-
-FREE tier note: 1,500 embed requests/day, 100 RPM.
-Script auto-throttles at 0.65s between batches.
-Typical corpus: ~2,000 chunks → ~100 API calls → ~70 seconds total.
 """
 
 import os

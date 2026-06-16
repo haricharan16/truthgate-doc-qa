@@ -1,6 +1,5 @@
 """
-TruthGate Pipeline — orchestrates all components (Gemini version).
-
+TruthGate Pipeline 
 Query flow:
 1. FalsePremiseClassifier → if FALSE_PREMISE: return immediately
 2. HybridRetriever        → fetch top-k chunks

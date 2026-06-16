@@ -1,19 +1,5 @@
 """
-AnswerabilityGate — core refusal logic, now using Gemini.
-
-Three layers (cheapest first):
-
-Layer 1 — Similarity threshold (free, no LLM):
-  If best cosine similarity < 0.35 → refuse immediately.
-
-Layer 2 — Gemini answerability check:
-  Send chunks + question to gemini-1.5-flash.
-  Strict prompt: "If context is insufficient, respond CANNOT_ANSWER."
-
-Layer 3 — Hedging detection (post-generation):
-  Scan answer for uncertain language → flag, don't refuse.
-
-Gemini free tier: gemini-1.5-flash — 15 RPM, 1M TPM/day. Plenty for eval.
+AnswerabilityGate — core refusal logic
 """
 
 import os
@@ -46,7 +32,7 @@ _HEDGING = [
 class AnswerabilityResult:
     is_answerable: bool
     best_score: float
-    reason: str   # "below_threshold" | "llm_refused" | "answerable" | "no_chunks"
+    reason: str  
     raw_response: str = ""
 
 
@@ -66,7 +52,7 @@ class AnswerabilityGate:
         self.client = genai.Client(api_key=key)
         self.model = os.getenv(
             "GEMINI_CHAT_MODEL",
-            "models/gemini-2.5-flash"
+            "models/gemini-3.1-flash-lite"
         )
 
     def check(self, question: str, retrieved_chunks: list) -> AnswerabilityResult:
@@ -76,7 +62,7 @@ class AnswerabilityGate:
         best_score = max(c.get("score", 0) for c in retrieved_chunks)
         logger.debug(f"Best retrieval score: {best_score:.3f}")
 
-        # Layer 1: similarity threshold (free)
+        # Layer 1: similarity threshold 
         if best_score < SIMILARITY_THRESHOLD:
             logger.info(f"Refusing: score {best_score:.3f} < threshold {SIMILARITY_THRESHOLD}")
             return AnswerabilityResult(is_answerable=False, best_score=best_score, reason="below_threshold")

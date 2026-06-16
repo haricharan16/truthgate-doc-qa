@@ -1,13 +1,5 @@
 """
-Answer generator with mandatory citations — using Gemini 1.5 Flash (FREE).
-
-Free tier: 15 RPM, 1M TPM/day — sufficient for all 60 eval questions.
-Cost: $0.00 on free tier.
-
-Gemini 1.5 Flash paid pricing (if you exceed free tier):
-  Input:  $0.075 per 1M tokens
-  Output: $0.30  per 1M tokens
-  → ~$0.0001 per query (still well under $0.02 budget)
+Answer generator with mandatory citations 
 """
 
 import os
@@ -20,9 +12,8 @@ import re
 
 logger = logging.getLogger(__name__)
 
-# Gemini 1.5 Flash pricing (if paid tier needed)
-INPUT_COST_PER_M  = 0.075   # $0.075 per 1M input tokens
-OUTPUT_COST_PER_M = 0.30    # $0.30  per 1M output tokens
+INPUT_COST_PER_M  = 0.075 
+OUTPUT_COST_PER_M = 0.30    
 
 _SYSTEM = """You are a precise technical documentation assistant for Apache Airflow.
 
@@ -129,5 +120,4 @@ class AnswerGenerator:
         return cited
 
     def _calc_cost(self, inp: int, out: int) -> float:
-        # On free tier this is effectively $0; formula for paid tier:
         return (inp * INPUT_COST_PER_M + out * OUTPUT_COST_PER_M) / 1_000_000

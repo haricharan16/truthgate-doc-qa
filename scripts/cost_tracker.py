@@ -1,12 +1,3 @@
-"""
-Cost tracking utilities.
-Reads from the JSONL cost log and produces reports.
-
-Usage:
-  python scripts/cost_tracker.py           # print summary
-  python scripts/cost_tracker.py --detail  # print per-query breakdown
-"""
-
 import sys
 import json
 import argparse

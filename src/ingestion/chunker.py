@@ -1,15 +1,3 @@
-"""
-Section-aware chunker.
-
-Design decisions (explained in DECISIONS.md):
-- Chunk by h2/h3 section boundaries, NOT fixed token windows
-- Only split within a section if it exceeds MAX_TOKENS
-- Overlap of 100 tokens when splitting long sections
-- Each chunk carries full metadata for citation
-
-Known failure: tables get split mid-row if they exceed MAX_TOKENS.
-"""
-
 import re
 import hashlib
 from dataclasses import dataclass, field, asdict
@@ -19,7 +7,6 @@ OVERLAP_TOKENS = 100  # overlap when splitting long sections
 
 
 def count_tokens(text: str) -> int:
-    """Approximate token count (~4 chars per token for English)."""
     return max(1, len(text) // 4)
 
 
