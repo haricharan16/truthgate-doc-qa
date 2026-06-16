@@ -1,6 +1,4 @@
-# DECISIONS.md — What I Actually Did, What Broke, and Why
-
-~1,150 words. Typos present. AI was used for code generation, not for this document.
+# DECISIONS.md 
 
 ---
 
@@ -8,91 +6,195 @@
 
 ### A. Asking the LLM "Is this answerable?" as the ONLY refusal mechanism
 
-My first approach: retrieve chunks, send them to Claude, ask "Can you answer this from the docs? Yes/No, then answer." 
+My first approach was simple: retrieve chunks, send them to Gemini, ask "Can you answer this from the docs? Yes/No, then answer."
 
-**It failed.** Claude Haiku is too eager to help. When I asked "What is Airflow's recommended database for production use?" and the docs only had a brief mention of PostgreSQL in a compatibility table, Haiku would say "Yes, I can answer this" and then confabulate details about replication settings that were never in the docs. The yes/no gate was overridden by the model's training knowledge.
+**It failed.**
 
-Fix: Added a **score-based pre-filter**. Now I only call the LLM at all if retrieval cosine similarity is above 0.35. Below that, hard refuse without an LLM call. Cheaper AND more accurate.
+Even with explicit instructions, Gemini was still willing to answer questions using its training knowledge when retrieval quality was poor. For example, when a question touched on production database recommendations and the retrieved context only contained partial information, the model would often fill in missing details that were not actually present in the documentation.
+
+Fix: I have added a **score-based pre-filter**. Now I only call the answerability LLM after retrieval if cosine similarity is above 0.35. Below that threshold the system refuses immediately without making an LLM call. This reduced hallucinations and lowered cost.
 
 ### B. Chunking by fixed token count (512 tokens, 50 overlap)
 
-This is the "obvious" approach and it broke in two specific Airflow docs patterns:
+This is the obvious approach and it broke in two specific Airflow documentation patterns:
 
-- **Long operator reference pages**: A single page for `PythonOperator` is ~3,000 tokens. Splitting at 512 cuts across parameter descriptions mid-sentence. Retrieval would return chunk 3 of 6 which has half a parameter table and no context.
-- **Tabular content**: Airflow's configuration reference is mostly tables. Fixed chunking split tables mid-row, making the retrieved text semantically nonsensical ("| `dagbag_import_timeout` | The time before... | (continued in next chunk)").
+* **Long operator reference pages**: A single operator page can exceed several thousand tokens. Fixed-size chunks often split parameter descriptions in the middle of explanations.
+* **Tabular content**: Airflow configuration documentation contains many tables. Fixed chunking split rows across chunks, producing retrieval results that were difficult for the generator to interpret correctly.
 
-Fix: Switched to **section-aware chunking**. I parse HTML structure (h2/h3 headers) and keep each section together, only splitting when a section exceeds 1,200 tokens. This preserves semantic units at the cost of variable chunk sizes. Still not perfect for tables — see Section 2.
+Fix: Switched to **section-aware chunking**. I parse HTML structure (`h2`/`h3` boundaries) and keep sections intact whenever possible. Sections are only split when they exceed 1,200 tokens.
 
 ### C. Using BM25 alone for sparse retrieval
 
-I tried pure BM25 first (simpler, no embedding API cost). Exact keyword matches work, but Airflow docs use inconsistent terminology. "Task instance" vs "task" vs "TI" all mean the same thing. BM25 with "task instance" misses chunks that say "TI" and vice versa.
+I initially tried pure BM25 retrieval because it was simple and free.
 
-Dense embeddings alone also fail: they're too semantic and return thematically related chunks that don't contain the answer. "How do I retry a failed task?" retrieved chunks about error handling philosophy rather than the `retries` parameter.
+The problem is that Airflow documentation uses multiple terms for the same concept. For example:
 
-**Hybrid retrieval (0.6 dense + 0.4 sparse, RRF fusion) outperformed either alone** by ~12 points on my answerable test set. The weights were tuned on a held-out 10-question dev set.
+* Task Instance
+* TI
+* Task
+
+BM25 often misses relevant chunks when terminology differs.
+
+Dense retrieval alone also struggled because it sometimes retrieved semantically related content that did not contain the actual answer.
+
+**Hybrid retrieval (dense + sparse with Reciprocal Rank Fusion) consistently outperformed either approach alone during development testing.**
+
+### D. Chunk ID Collisions During Ingestion
+
+A bug I did not anticipate appeared during ingestion.
+
+Chunk IDs were generated using a hash of the source URL and section anchor. In practice, multiple chunks occasionally generated identical IDs, which caused ChromaDB to raise `DuplicateIDError` exceptions which took majority of the time ton understand the duplicate IDs.
+
+The symptom appeared as ingestion succeeding for scraping and embedding but failing during vector-store insertion.
+
+Fix:
+
+* Added duplicate detection during ingestion.
+* Removed duplicate chunks before indexing.
+* Then I updated chunk ID generation to guarantee uniqueness across the corpus.
+
+This issue was responsible for several hours of debugging because it initially appeared to be a ChromaDB problem rather than a chunk-generation problem.
+
 
 ---
 
 ## 2. Chunking Strategy and Its Failure Mode
 
-**Strategy:** Section-aware chunking by HTML `<h2>`/`<h3>` boundaries. Each chunk = one documentation section. Max 1,200 tokens; if exceeded, split at paragraph boundaries with 100-token overlap.
+**Strategy:** Section-aware chunking using HTML `h2` and `h3` boundaries.
 
-**Metadata stored per chunk:** `{source_url, section_title, h2_parent, char_offset, token_count}`
+Each chunk corresponds to a documentation section whenever possible.
 
-**Specific failure mode that still exists:** Multi-section synthesis questions.
+Rules:
 
-When a question requires combining information from two sections (e.g., "What happens to task retries when the scheduler restarts?"), the answer requires chunks from both the "Retries" section and the "Scheduler" section. My retrieval returns the top-3 chunks, which may include both — but they're often not adjacent and the generator sometimes fails to synthesize them coherently.
+* Maximum chunk size: 1,200 tokens
+* Split only when necessary
+* Paragraph-aware splitting
+* 100-token overlap for oversized sections
 
-I added a "synthesis mode" flag that increases top-k to 6 for questions containing words like "when", "what happens if", "interaction between". It helps but doesn't fully solve it. 5 of my 25 answerable questions explicitly require multi-section synthesis — my accuracy on those 5 is ~60% vs ~92% on single-section questions.
+**Metadata stored per chunk:**
+
+```python
+{
+    "source_url",
+    "section_title",
+    "page_title",
+    "section_anchor",
+    "token_count",
+    "chunk_index"
+}
+```
+
+### Specific failure mode that still exists
+
+Multi-section synthesis questions.
+
+Example:
+
+> What happens to task retries when the scheduler restarts?
+
+The answer requires information from multiple documentation sections. Retrieval often finds the relevant chunks, but the generator occasionally fails to synthesize information across those sections correctly.
+
+To partially address this, I added a synthesis mode that increases retrieval depth for questions containing phrases such as:
+
+* what happens
+* interaction
+* compare
+* difference between
+* together
+
+This helps but does not fully solve the problem.
 
 ---
 
 ## 3. How Refusal Actually Works (and Where It Fails)
 
-**The mechanism has three layers:**
+The mechanism has three layers.
 
-**Layer 1 — Similarity threshold (pre-LLM):**  
-If max cosine similarity across all retrieved chunks < 0.35, return `NOT_IN_DOCS` immediately. No LLM call. Cost: ~$0.
+### Layer 1 — Similarity Threshold
 
-**Layer 2 — False-premise detection (pre-retrieval):**  
-A small set of known Airflow facts is hardcoded (e.g., "Airflow uses Python, not Ruby", "Airflow stores metadata in a relational DB, not Redis by default"). Before retrieval, the question is scanned against these facts using pattern matching + a single cheap LLM call with a 3-sentence system prompt. If the question contradicts a known fact, return `FALSE_PREMISE` with a correction.
+Here in this step I chose, if the maximum retrieval similarity score is below 0.35, return: NOT_IN_DOCS.
 
-**Layer 3 — LLM answerability check (post-retrieval):**  
-If Layer 1 passes, I send the retrieved chunks + question to Claude with a system prompt that says: "Answer ONLY from the provided context. If the context does not contain enough information, respond with exactly: CANNOT_ANSWER". I then check if the response starts with `CANNOT_ANSWER`.
+Then, No answerability LLM call is made.
 
-**Category it still gets wrong:**  
-"Plausible near-miss" questions. Example: "What is the default parallelism setting in Airflow?" — the docs mention that parallelism is configurable and the default is 32, but only in a config reference table. My chunk for that table has low similarity score (it's mostly key-value pairs, not semantic prose), so it often falls below Layer 1's threshold and incorrectly returns `NOT_IN_DOCS`. This is a retrieval precision problem masquerading as a refusal problem.
+### Layer 2 — False-Premise Detection
+
+Before retrieval, the system checks for known false assumptions that were provided.
+
+If a false premise is detected, the system returns: FALSE_PREMISE along with a correction.
+
+### Layer 3 — LLM Answerability Check
+
+If retrieval passes Layer 1, the retrieved chunks and question are sent to Gemini with a strict instruction:
+
+> Answer ONLY from the provided context. If the context does not contain enough information, respond with exactly CANNOT_ANSWER.
+
+If the response begins with: CANNOT_ANSWER
+
+the system refuses the query.
+
+### Category It Still Gets Wrong
+
+Plausible near-miss questions.
+
+Example:
+
+> What is the default parallelism setting in Airflow? The answer was given as cannot answer.
+
+Actually, the answer exists in the documentation, but only inside a configuration table.
+
+Those chunks often receive lower retrieval scores than narrative text sections and occasionally fall below the refusal threshold.
+
+This is fundamentally a retrieval problem that manifests as a refusal error.
 
 ---
 
-## 4. What I'd Do With One More Week and $500/month
+## 4. What I'd Do With One More Week and $500/Month
 
-- **Better embeddings**: Switch from Anthropic's embedding API to a fine-tuned embedder trained specifically on Airflow terminology using contrastive pairs. $500 is enough for ~10 hours of A100 time.
-- **Proper reranker**: Add a cross-encoder reranker (e.g., `cross-encoder/ms-marco-MiniLM-L-6-v2`). My current "reranking" is just re-scoring by cosine similarity, not a true cross-encoder.
-- **Expand false-premise detection**: Currently hardcoded ~20 facts. Would replace with a structured knowledge graph of Airflow architecture facts and do graph-based contradiction detection.
-- **Eval expansion**: 60 questions is not enough. Would expand to 200+, add adversarial paraphrases of each answerable question to test robustness.
-- **Streaming**: The API currently waits for full response. Streaming would drop perceived latency significantly.
-- **Caching**: Identical or near-identical queries should hit a cache first. Using semantic deduplication (cosine similarity > 0.97 = cache hit) would save cost on repeated queries.
+* Train a domain-specific embedding model for Airflow terminology.
+* Add a real cross-encoder reranker instead of cosine-similarity reranking.
+* Expand false-premise detection beyond hardcoded rules.
+* Increase the evaluation suite from 60 questions to 200+ questions.
+* Actually, as Ihave used free tier Gemini model, the rate limits are low and while I was in the evaluation phase, instead of response, I got "ERROR" message, this issue can be resolved with monetisation and purchasing better models.
+
+The two metrics that most need improvement are refusal precision and latency.
 
 ---
 
-## 5. Shortcut Taken Due to 24h Limit
+## 5. Shortcut Taken Due to the Time Limit
 
-The false-premise detection (Layer 2) is largely **hardcoded rule-based**, not learned. I have ~20 manually written patterns like:
+False-premise detection is still largely rule-based.
+
+The system currently contains a manually written list of patterns such as:
 
 ```python
 FALSE_PREMISES = [
-    ("stores.*indexes.*JSON", "Airflow stores metadata in a SQL database, not JSON"),
-    ("written in Ruby", "Airflow is written in Python"),
-    ("uses MongoDB", "Airflow uses a relational database (SQLite/MySQL/PostgreSQL)"),
-    ...
+    ("stores.*indexes.*JSON",
+     "Airflow stores metadata in a SQL database, not JSON"),
+    ("written in Ruby",
+     "Airflow is written in Python"),
+    ("uses MongoDB",
+     "Airflow uses a relational database")
 ]
 ```
 
-This is brittle. It won't catch novel false premises outside my list. A real implementation would use the corpus itself as ground truth and run an entailment check: "Does any retrieved chunk *contradict* this question's premise?" That's a proper NLI (natural language inference) task, ideally with a dedicated model like `cross-encoder/nli-deberta-v3-base`.
+This is effective for common misconceptions but does not generalize well to unseen false premises.
 
-I took this shortcut because implementing proper NLI would have taken 4+ hours of setup, evaluation, and threshold tuning that I didn't have in this window.
+A more principled solution would retrieve evidence from the corpus and perform contradiction detection using a dedicated NLI model.
+
+I chose the rule-based approach because implementing, evaluating, and tuning an NLI pipeline would have required significantly more time than was available.
 
 ---
 
-*If you're reading this in the live round: yes, I know the false-premise list is hardcoded, I know the reranker is fake, and I know the multi-section synthesis is the weakest point. Happy to go deeper on any of these.*
+## Final Thoughts
+
+The final evaluation set contained 60 questions across answerable, unanswerable, false-premise, and adversarial categories.
+
+The strongest part of the system is retrieval-grounded answering with citation enforcement.
+
+The weakest areas are:
+
+* Multi-section synthesis
+* Refusal precision
+* Latency
+
+If I had additional time, those are the areas I would prioritize first.
