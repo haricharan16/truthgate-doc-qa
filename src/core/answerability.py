@@ -92,9 +92,9 @@ class AnswerabilityGate:
                 ),
             )
             raw = response.text.strip()
-            print("\nANSWERABILITY RAW RESPONSE:")
-            print(raw)
-            print()
+            # print("\nANSWERABILITY RAW RESPONSE:")
+            # print(raw)
+            # print()
 
             if raw.startswith("CANNOT_ANSWER"):
                 return AnswerabilityResult(
