@@ -1,0 +1,462 @@
+[
+  {
+    "id": 1,
+    "category": "answerable",
+    "difficulty": "easy",
+    "question": "What is a DAG in Apache Airflow?",
+    "expected_type": "ANSWERED",
+    "notes": "Core concept, well-documented"
+  },
+  {
+    "id": 2,
+    "category": "answerable",
+    "difficulty": "easy",
+    "question": "How do you define a DAG in Python using Airflow?",
+    "expected_type": "ANSWERED",
+    "notes": "Basic usage"
+  },
+  {
+    "id": 3,
+    "category": "answerable",
+    "difficulty": "easy",
+    "question": "What is the purpose of the Airflow scheduler?",
+    "expected_type": "ANSWERED",
+    "notes": "Core component"
+  },
+  {
+    "id": 4,
+    "category": "answerable",
+    "difficulty": "easy",
+    "question": "What is the default executor in Apache Airflow?",
+    "expected_type": "ANSWERED",
+    "notes": "SequentialExecutor is default"
+  },
+  {
+    "id": 5,
+    "category": "answerable",
+    "difficulty": "easy",
+    "question": "What does XCom stand for and what is it used for in Airflow?",
+    "expected_type": "ANSWERED",
+    "notes": "Cross-communication between tasks"
+  },
+  {
+    "id": 6,
+    "category": "answerable",
+    "difficulty": "easy",
+    "question": "How do you set dependencies between tasks in a DAG?",
+    "expected_type": "ANSWERED",
+    "notes": ">> operator and set_upstream/set_downstream"
+  },
+  {
+    "id": 7,
+    "category": "answerable",
+    "difficulty": "easy",
+    "question": "What is the PythonOperator used for in Airflow?",
+    "expected_type": "ANSWERED",
+    "notes": "Run Python callables"
+  },
+  {
+    "id": 8,
+    "category": "answerable",
+    "difficulty": "easy",
+    "question": "What is the BashOperator used for?",
+    "expected_type": "ANSWERED",
+    "notes": "Execute bash commands"
+  },
+  {
+    "id": 9,
+    "category": "answerable",
+    "difficulty": "medium",
+    "question": "How does the CeleryExecutor work in Airflow?",
+    "expected_type": "ANSWERED",
+    "notes": "Distributed task execution"
+  },
+  {
+    "id": 10,
+    "category": "answerable",
+    "difficulty": "medium",
+    "question": "What is the difference between a DAG run and a task instance in Airflow?",
+    "expected_type": "ANSWERED",
+    "notes": "Requires understanding of both concepts"
+  },
+  {
+    "id": 11,
+    "category": "answerable",
+    "difficulty": "medium",
+    "question": "How do you configure retries for a task in Airflow?",
+    "expected_type": "ANSWERED",
+    "notes": "retries and retry_delay parameters"
+  },
+  {
+    "id": 12,
+    "category": "answerable",
+    "difficulty": "medium",
+    "question": "What is the Airflow metadata database used for?",
+    "expected_type": "ANSWERED",
+    "notes": "Stores state, logs, connections"
+  },
+  {
+    "id": 13,
+    "category": "answerable",
+    "difficulty": "medium",
+    "question": "How do you trigger a DAG manually in Airflow?",
+    "expected_type": "ANSWERED",
+    "notes": "UI and CLI methods"
+  },
+  {
+    "id": 14,
+    "category": "answerable",
+    "difficulty": "medium",
+    "question": "What is the purpose of Airflow Connections and how are they managed?",
+    "expected_type": "ANSWERED",
+    "notes": "Connection management"
+  },
+  {
+    "id": 15,
+    "category": "answerable",
+    "difficulty": "medium",
+    "question": "What are Airflow Variables and how do they differ from environment variables?",
+    "expected_type": "ANSWERED",
+    "notes": "Variable storage"
+  },
+  {
+    "id": 16,
+    "category": "answerable",
+    "difficulty": "medium",
+    "question": "What does the `catchup` parameter do in an Airflow DAG?",
+    "expected_type": "ANSWERED",
+    "notes": "Backfill behavior"
+  },
+  {
+    "id": 17,
+    "category": "answerable",
+    "difficulty": "medium",
+    "question": "How does Airflow handle task failures and what states can a task instance be in?",
+    "expected_type": "ANSWERED",
+    "notes": "Task state machine"
+  },
+  {
+    "id": 18,
+    "category": "answerable",
+    "difficulty": "medium",
+    "question": "What is a SubDAG and when would you use it?",
+    "expected_type": "ANSWERED",
+    "notes": "SubDAG operator"
+  },
+  {
+    "id": 19,
+    "category": "answerable",
+    "difficulty": "hard",
+    "question": "What is the KubernetesPodOperator and what are the key parameters needed to run a pod?",
+    "expected_type": "ANSWERED",
+    "notes": "Kubernetes integration"
+  },
+  {
+    "id": 20,
+    "category": "answerable",
+    "difficulty": "hard",
+    "question": "How does Airflow's TaskFlow API differ from traditional operator-based DAG authoring?",
+    "expected_type": "ANSWERED",
+    "notes": "Modern DAG authoring"
+  },
+  {
+    "id": 21,
+    "category": "answerable",
+    "difficulty": "hard",
+    "question": "What are Airflow Pools and how do they help control task concurrency?",
+    "expected_type": "ANSWERED",
+    "notes": "Resource management"
+  },
+  {
+    "id": 22,
+    "category": "answerable",
+    "difficulty": "hard",
+    "question": "What are Airflow Sensors and how does poke_interval work?",
+    "expected_type": "ANSWERED",
+    "notes": "Sensor mechanism"
+  },
+  {
+    "id": 23,
+    "category": "answerable",
+    "difficulty": "hard",
+    "synthesis": true,
+    "question": "How does catchup interact with the max_active_runs parameter when scheduling historical DAG runs?",
+    "expected_type": "ANSWERED",
+    "notes": "SYNTHESIS: requires catchup docs + max_active_runs docs"
+  },
+  {
+    "id": 24,
+    "category": "answerable",
+    "difficulty": "hard",
+    "synthesis": true,
+    "question": "What happens to XCom data when a task is retried — is the previous XCom value overwritten or retained?",
+    "expected_type": "ANSWERED",
+    "notes": "SYNTHESIS: XCom + retry behavior"
+  },
+  {
+    "id": 25,
+    "category": "answerable",
+    "difficulty": "hard",
+    "synthesis": true,
+    "question": "How does Airflow's priority_weight system interact with pools to determine task execution order?",
+    "expected_type": "ANSWERED",
+    "notes": "SYNTHESIS: priority_weight + pools"
+  },
+  {
+    "id": 26,
+    "category": "unanswerable",
+    "question": "What is the recommended way to deploy Airflow on AWS EKS using Terraform?",
+    "expected_type": "NOT_IN_DOCS",
+    "notes": "Terraform specifics not in Airflow docs"
+  },
+  {
+    "id": 27,
+    "category": "unanswerable",
+    "question": "How do I configure Prometheus to scrape Airflow metrics?",
+    "expected_type": "NOT_IN_DOCS",
+    "notes": "Prometheus-side config not in Airflow docs"
+  },
+  {
+    "id": 28,
+    "category": "unanswerable",
+    "question": "What is the maximum number of concurrent Airflow installations recommended per organization?",
+    "expected_type": "NOT_IN_DOCS",
+    "notes": "Organizational limit not defined in docs"
+  },
+  {
+    "id": 29,
+    "category": "unanswerable",
+    "question": "How does Airflow compare to Apache Flink for stream processing workloads?",
+    "expected_type": "NOT_IN_DOCS",
+    "notes": "Comparative analysis not in Airflow docs"
+  },
+  {
+    "id": 30,
+    "category": "unanswerable",
+    "question": "What is the total number of built-in operators available in Airflow 2.9?",
+    "expected_type": "NOT_IN_DOCS",
+    "notes": "Exact operator count not listed in docs"
+  },
+  {
+    "id": 31,
+    "category": "unanswerable",
+    "question": "How do I write a custom Airflow operator that integrates with Salesforce?",
+    "expected_type": "NOT_IN_DOCS",
+    "notes": "Salesforce-specific code not in docs"
+  },
+  {
+    "id": 32,
+    "category": "unanswerable",
+    "question": "What is the memory usage profile of the Airflow scheduler under 1000 concurrent DAG runs?",
+    "expected_type": "NOT_IN_DOCS",
+    "notes": "Performance benchmarks not in docs"
+  },
+  {
+    "id": 33,
+    "category": "unanswerable",
+    "question": "Can Airflow be used to orchestrate dbt models and if so, what is the recommended architecture?",
+    "expected_type": "NOT_IN_DOCS",
+    "notes": "dbt integration architecture not in Airflow docs"
+  },
+  {
+    "id": 34,
+    "category": "unanswerable",
+    "question": "How many lines of code is the Airflow codebase?",
+    "expected_type": "NOT_IN_DOCS",
+    "notes": "Codebase size not documented"
+  },
+  {
+    "id": 35,
+    "category": "unanswerable",
+    "question": "What version of Python was Airflow originally written in?",
+    "expected_type": "NOT_IN_DOCS",
+    "notes": "Historical origin version not in stable docs"
+  },
+  {
+    "id": 36,
+    "category": "unanswerable",
+    "question": "How do I configure Blue-Green deployments for Airflow in a production environment?",
+    "expected_type": "NOT_IN_DOCS",
+    "notes": "Blue-green deployment strategy not covered"
+  },
+  {
+    "id": 37,
+    "category": "unanswerable",
+    "question": "What are the SLA compliance rates for Airflow Cloud managed service?",
+    "expected_type": "NOT_IN_DOCS",
+    "notes": "No managed service SLA in open source docs"
+  },
+  {
+    "id": 38,
+    "category": "unanswerable",
+    "question": "How much does it cost to run Airflow on Google Cloud Composer per month?",
+    "expected_type": "NOT_IN_DOCS",
+    "notes": "Pricing not in Airflow docs"
+  },
+  {
+    "id": 39,
+    "category": "unanswerable",
+    "question": "What neural network architecture does Airflow use for anomaly detection in DAG runs?",
+    "expected_type": "NOT_IN_DOCS",
+    "notes": "Airflow has no built-in neural network anomaly detection"
+  },
+  {
+    "id": 40,
+    "category": "unanswerable",
+    "question": "What is the difference between Airflow 2.7 and 2.8 in terms of scheduler performance?",
+    "expected_type": "NOT_IN_DOCS",
+    "notes": "Version-specific performance comparison not in stable docs"
+  },
+  {
+    "id": 41,
+    "category": "unanswerable",
+    "question": "How does Airflow handle GDPR data deletion requests for task logs?",
+    "expected_type": "NOT_IN_DOCS",
+    "notes": "GDPR-specific procedures not documented"
+  },
+  {
+    "id": 42,
+    "category": "unanswerable",
+    "question": "What is the recommended Redis cluster size for a production CeleryExecutor setup?",
+    "expected_type": "NOT_IN_DOCS",
+    "notes": "Redis sizing recommendations not in Airflow docs"
+  },
+  {
+    "id": 43,
+    "category": "unanswerable",
+    "question": "How many companies use Apache Airflow in production globally?",
+    "expected_type": "NOT_IN_DOCS",
+    "notes": "Adoption statistics not in technical docs"
+  },
+  {
+    "id": 44,
+    "category": "unanswerable",
+    "question": "What is the Git commit hash for the Airflow 2.6.0 release?",
+    "expected_type": "NOT_IN_DOCS",
+    "notes": "Git commit hash not in stable docs"
+  },
+  {
+    "id": 45,
+    "category": "unanswerable",
+    "question": "How do I configure Airflow to send Slack alerts using webhooks?",
+    "expected_type": "NOT_IN_DOCS",
+    "notes": "Specific Slack webhook config not covered in core docs"
+  },
+  {
+    "id": 46,
+    "category": "false_premise",
+    "question": "Why does Airflow store all its indexes in JSON format?",
+    "expected_type": "FALSE_PREMISE",
+    "false_fact": "Airflow stores indexes in JSON",
+    "correction": "Airflow uses a relational SQL database for metadata storage, not JSON"
+  },
+  {
+    "id": 47,
+    "category": "false_premise",
+    "question": "Since Airflow is written in Ruby, how do I install Ruby gems for custom operators?",
+    "expected_type": "FALSE_PREMISE",
+    "false_fact": "Airflow is written in Ruby",
+    "correction": "Airflow is written in Python"
+  },
+  {
+    "id": 48,
+    "category": "false_premise",
+    "question": "How does Airflow's built-in machine learning model training feature work?",
+    "expected_type": "FALSE_PREMISE",
+    "false_fact": "Airflow has a built-in ML training feature",
+    "correction": "Airflow is an orchestrator, not an ML training platform"
+  },
+  {
+    "id": 49,
+    "category": "false_premise",
+    "question": "Why does Airflow store DAG definitions in its MongoDB database?",
+    "expected_type": "FALSE_PREMISE",
+    "false_fact": "Airflow uses MongoDB and stores DAGs there",
+    "correction": "DAGs are Python files in the filesystem; Airflow uses SQL databases, not MongoDB"
+  },
+  {
+    "id": 50,
+    "category": "false_premise",
+    "question": "How do I configure the Airflow webserver to schedule DAG runs?",
+    "expected_type": "FALSE_PREMISE",
+    "false_fact": "The webserver schedules DAG runs",
+    "correction": "The scheduler component handles scheduling, not the webserver"
+  },
+  {
+    "id": 51,
+    "category": "false_premise",
+    "question": "What cron daemon does Airflow use internally to trigger tasks?",
+    "expected_type": "FALSE_PREMISE",
+    "false_fact": "Airflow uses the system cron daemon",
+    "correction": "Airflow has its own scheduler process, not the OS cron daemon"
+  },
+  {
+    "id": 52,
+    "category": "false_premise",
+    "question": "How do I configure Airflow to write DAG definitions in YAML instead of its default XML format?",
+    "expected_type": "FALSE_PREMISE",
+    "false_fact": "Airflow defaults to XML for DAG definitions",
+    "correction": "Airflow DAGs are written in Python, not XML or YAML"
+  },
+  {
+    "id": 53,
+    "category": "false_premise",
+    "question": "Since XCom is designed for large file transfers, what is the file size limit?",
+    "expected_type": "FALSE_PREMISE",
+    "false_fact": "XCom is designed for large file transfers",
+    "correction": "XCom is designed for small metadata/values only, not large file transfers"
+  },
+  {
+    "id": 54,
+    "category": "false_premise",
+    "question": "Why does the Airflow BashOperator run commands inside a Docker container by default?",
+    "expected_type": "FALSE_PREMISE",
+    "false_fact": "BashOperator runs inside Docker by default",
+    "correction": "BashOperator runs shell commands directly on the host; use DockerOperator for containers"
+  },
+  {
+    "id": 55,
+    "category": "false_premise",
+    "question": "How does Airflow's real-time streaming mode differ from its batch processing mode?",
+    "expected_type": "FALSE_PREMISE",
+    "false_fact": "Airflow has a real-time streaming mode",
+    "correction": "Airflow is a batch workflow orchestrator, not a streaming platform"
+  },
+  {
+    "id": 56,
+    "category": "adversarial",
+    "question": "What does Airflow do when a DAG file has a syntax error?",
+    "expected_type": "ANSWERED",
+    "notes": "ADVERSARIAL: system should answer this (it IS in docs) but the wording 'what does it DO' is vague enough to confuse refusal logic. Tests false-negative refusal."
+  },
+  {
+    "id": 57,
+    "category": "adversarial",
+    "question": "How do I use Airflow to process real-time Kafka streams?",
+    "expected_type": "NOT_IN_DOCS",
+    "notes": "ADVERSARIAL: Airflow has a Kafka operator, but full streaming architecture is NOT in core docs. Tests if system confabulates a full answer."
+  },
+  {
+    "id": 58,
+    "category": "adversarial",
+    "question": "What is the exact SQL query Airflow runs to check for ready task instances?",
+    "expected_type": "NOT_IN_DOCS",
+    "notes": "ADVERSARIAL: internal implementation detail. Not in user docs. Tests if system pulls from LLM training knowledge."
+  },
+  {
+    "id": 59,
+    "category": "adversarial",
+    "question": "The Airflow documentation says the default pool has 128 slots — is that correct?",
+    "expected_type": "FALSE_PREMISE",
+    "notes": "ADVERSARIAL: default_pool has 128 slots is actually correct — this is a trap for over-triggering false premise detection. System should ANSWER this, not flag it as false premise.",
+    "is_trap_for_fp": true,
+    "expected_type": "ANSWERED"
+  },
+  {
+    "id": 60,
+    "category": "adversarial",
+    "question": "Can you explain why Airflow's scheduler is single-threaded and what limitations this creates?",
+    "expected_type": "NOT_IN_DOCS",
+    "notes": "ADVERSARIAL: scheduler threading model details not well-covered in user docs. LLM 'knows' this from training. Tests hallucination boundary."
+  }
+]

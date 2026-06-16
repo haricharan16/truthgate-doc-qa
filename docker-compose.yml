@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  # One-time ingestion — runs scraper + embedder + indexes
+  ingest:
+    build: .
+    env_file: .env
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    command: python scripts/ingest.py
+    profiles: ["ingest"]   # only runs when: docker compose --profile ingest up
+
+  # Main API server
+  api:
+    build: .
+    env_file: .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data          # share ingest output
+      - ./logs:/app/logs
+    command: uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Run eval harness
+  eval:
+    build: .
+    env_file: .env
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./eval:/app/eval
+    command: python eval/run_eval.py --output eval/results_latest.json
+    profiles: ["eval"]
+
+volumes:
+  data:
+  logs:
