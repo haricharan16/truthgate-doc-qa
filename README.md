@@ -357,17 +357,6 @@ python eval/run_eval.py
 ```text
 $0.0050
 ```
-
----
-
-# Lessons Learned
-
-* Hybrid retrieval significantly improved recall compared to dense retrieval alone.
-* Answerability gating reduced hallucinations but occasionally over-refused valid questions.
-* Free-tier Gemini quotas affected evaluation throughput.
-* Chunk ID generation and indexing consistency were critical for retrieval quality.
-* Retrieval quality had a larger impact on overall performance than generation quality.
-
 ---
 
 # Limitations
