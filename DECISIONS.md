@@ -167,13 +167,12 @@ False-premise detection is still largely rule-based.
 The system currently contains a manually written list of patterns such as:
 
 ```python
-FALSE_PREMISES = [
-    ("stores.*indexes.*JSON",
-     "Airflow stores metadata in a SQL database, not JSON"),
-    ("written in Ruby",
-     "Airflow is written in Python"),
-    ("uses MongoDB",
-     "Airflow uses a relational database")
+_SUSPICIOUS_PATTERNS = [
+    r"does airflow (use|support|require|have)",
+    r"is (it true|correct) that airflow",
+    r"why does airflow (use|store|run|require)",
+    r"since airflow (is|uses|has)",
+    r"how does airflow.*unlike",
 ]
 ```
 
